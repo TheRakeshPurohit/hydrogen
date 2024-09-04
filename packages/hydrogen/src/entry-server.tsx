@@ -136,7 +136,7 @@ export const renderHydrogen = (App: any) => {
 
     if (hydrogenConfig.poweredByHeader ?? true) {
       // If undefined in the config, then always show the header
-      response.headers.set('powered-by', 'Shopify-Hydrogen');
+      response.headers.set('powered-by', 'Shopify, Hydrogen');
     }
 
     sessionApi ??= hydrogenConfig.session?.(log);
@@ -323,7 +323,10 @@ async function processRequest(
     });
   }
 
-  if (isBotUA(url, request.headers.get('user-agent'))) {
+  if (
+    request.headers.get('oxygen-do-not-stream-response') === 'true' ||
+    isBotUA(url, request.headers.get('user-agent'))
+  ) {
     response.doNotStream();
   }
 

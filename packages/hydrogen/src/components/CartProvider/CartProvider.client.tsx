@@ -14,6 +14,7 @@ import {
   CartLineInput,
   CartLineUpdateInput,
   CountryCode,
+  LanguageCode,
 } from '../../storefront-api-types.js';
 import {defaultCartFragment} from './cart-queries.js';
 import {CartContext} from './context.js';
@@ -34,6 +35,7 @@ import {CartNoteUpdateMutationVariables} from './graphql/CartNoteUpdateMutation.
 import {useCartAPIStateMachine} from './useCartAPIStateMachine.client.js';
 import {CART_ID_STORAGE_KEY} from './constants.js';
 import {ClientAnalytics} from '../../foundation/Analytics/ClientAnalytics.js';
+import {useLocalization} from '../../hooks/useLocalization/useLocalization.js';
 
 export function CartProvider({
   children,
@@ -57,7 +59,8 @@ export function CartProvider({
   data: cart,
   cartFragment = defaultCartFragment,
   customerAccessToken,
-  countryCode = CountryCode.Us,
+  countryCode,
+  languageCode,
 }: {
   /** Any `ReactNode` elements. */
   children: React.ReactNode;
@@ -103,8 +106,21 @@ export function CartProvider({
   customerAccessToken?: CartBuyerIdentityInput['customerAccessToken'];
   /** The ISO country code for i18n. */
   countryCode?: CountryCode;
+  /** The ISO language code for i18n. */
+  languageCode?: LanguageCode;
 }) {
+  const {country, language} = useLocalization();
+
+  countryCode = (
+    (countryCode as string) ?? country.isoCode
+  ).toUpperCase() as CountryCode;
+
+  languageCode = (
+    (languageCode as string) ?? language.isoCode
+  ).toUpperCase() as LanguageCode;
+
   if (countryCode) countryCode = countryCode.toUpperCase() as CountryCode;
+
   const [prevCountryCode, setPrevCountryCode] = useState(countryCode);
   const [prevCustomerAccessToken, setPrevCustomerAccessToken] =
     useState(customerAccessToken);
@@ -254,6 +270,7 @@ export function CartProvider({
     data: cart,
     cartFragment,
     countryCode,
+    languageCode,
     onCartActionEntry,
     onCartActionOptimisticUI,
     onCartActionComplete,
